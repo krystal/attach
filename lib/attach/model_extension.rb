@@ -57,13 +57,13 @@ module Attach
             unless child_roles.empty?
               child_attachments = {}
               Attachment.where(:parent_id => root_attachments.values.map(&:id), :role => child_roles).each do |attachment|
-                child_attachments[[attachment.id, attachment.role]] = attachment
+                child_attachments[[attachment.parent_id, attachment.role]] = attachment
               end
 
               root_attachments.values.each do |attachment|
                 options[attachment.role.to_sym].each do |role|
                   attachment.instance_variable_set("@cached_children", {}) if attachment.instance_variable_get("@cached_children").nil?
-                  attachment.instance_variable_get("@cached_children")[role.to_sym] = attachment
+                  attachment.instance_variable_get("@cached_children")[role.to_sym] = child_attachments[[attachment.id, role.to_s]]
                 end
               end
             end
