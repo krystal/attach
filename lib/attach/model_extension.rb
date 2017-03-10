@@ -52,16 +52,19 @@ module Attach
               root_attachments[[attachment.owner_id, attachment.role]] = attachment
             end
 
-            child_attachments = {}
-            child_roles = options.values.flatten
-            Attachment.where(:parent_id => root_attachments.values.map(&:id), :role => child_roles).each do |attachment|
-              child_attachments[[attachment.id, attachment.role]] = attachment
-            end
 
-            root_attachments.values.each do |attachment|
-              options[attachment.role.to_sym].each do |role|
-                attachment.instance_variable_set("@cached_children", {}) if attachment.instance_variable_get("@cached_children").nil?
-                attachment.instance_variable_get("@cached_children")[role.to_sym] = attachment
+            child_roles = options.values.flatten
+            unless child_roles.empty?
+              child_attachments = {}
+              Attachment.where(:parent_id => root_attachments.values.map(&:id), :role => child_roles).each do |attachment|
+                child_attachments[[attachment.id, attachment.role]] = attachment
+              end
+
+              root_attachments.values.each do |attachment|
+                options[attachment.role.to_sym].each do |role|
+                  attachment.instance_variable_set("@cached_children", {}) if attachment.instance_variable_get("@cached_children").nil?
+                  attachment.instance_variable_get("@cached_children")[role.to_sym] = attachment
+                end
               end
             end
 
