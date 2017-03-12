@@ -97,6 +97,11 @@ module Attach
       end
     end
 
+    # Try to return a given otherwise revert to the parent
+    def try(role)
+      child(role) || self
+    end
+
     # Add a child attachment
     def add_child(role, &block)
       attachment = self.children.build
