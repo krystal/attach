@@ -22,6 +22,12 @@ module Attach
         AttachmentBinary.where(:attachment_id => attachment.id).destroy_all
       end
 
+      def read_multi(attachments)
+        AttachmentBinary.where(:attachment_id => attachments.map(&:id)).each_with_object({}) do |binary, hash|
+          hash[binary.attachment_id] = binary.data
+        end
+      end
+
     end
   end
 end

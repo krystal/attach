@@ -31,6 +31,16 @@ module Attach
         "/attachment/#{attachment.token}/#{attachment.file_name}"
       end
 
+      #
+      # Return binaries for a set of files. They should be returned as a hash consisting
+      # of the attachment ID followed by the data
+      #
+      def read_multi(attachments)
+        attachments.compact.each_with_object({}) do |attachment, hash|
+          hash[attachment] = read(attachment)
+        end
+      end
+
     end
   end
 end

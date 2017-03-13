@@ -72,6 +72,7 @@ module Attach
     # Return the binary data for this attachment
     def binary
       @binary ||= persisted? ? Attach.backend.read(self) : nil
+      @binary == :nil ? nil : @binary
     end
 
     # Return the path to the attachment

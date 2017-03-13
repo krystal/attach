@@ -33,12 +33,15 @@ module Attach
           if records.empty?
             # Nothing to do
           else
+
             if options.first.is_a?(Hash)
               options = options.first
+              binaries_to_include = options.delete(:_include_binaries) || {}
             else
               options = options.each_with_object({}) do |role, hash|
                 hash[role.to_sym] = []
               end
+              binaries_to_include = {}
             end
 
             options.keys.each do |key|
@@ -47,11 +50,14 @@ module Attach
               end
             end
 
+            attachments_for_binary_preload = []
             root_attachments = {}
             Attachment.where(:owner_id => records.map(&:id), :owner_type => records.first.class.to_s, :role => options.keys).each do |attachment|
               root_attachments[[attachment.owner_id, attachment.role]] = attachment
+              if binaries_to_include[attachment.role.to_sym] && binaries_to_include[attachment.role.to_sym].include?(:_self)
+                attachments_for_binary_preload << attachment
+              end
             end
-
 
             child_roles = options.values.flatten
             unless child_roles.empty?
@@ -62,10 +68,24 @@ module Attach
 
               root_attachments.values.each do |attachment|
                 options[attachment.role.to_sym].each do |role|
+                  child_attachment = child_attachments[[attachment.id, role.to_s]]
+
+                  if child_attachment && binaries_to_include[attachment.role.to_sym] && binaries_to_include[attachment.role.to_sym].include?(role)
+                    attachments_for_binary_preload << child_attachment
+                  end
+
                   attachment.instance_variable_set("@cached_children", {}) if attachment.instance_variable_get("@cached_children").nil?
                   attachment.instance_variable_get("@cached_children")[role.to_sym] = child_attachments[[attachment.id, role.to_s]] || :nil
                 end
               end
+            end
+
+            if binaries = Attach.backend.read_multi(attachments_for_binary_preload)
+              attachments_for_binary_preload.each do |attachment|
+                attachment.instance_variable_set("@binary", binaries[attachment.id] || :nil)
+              end
+            else
+              # Preloading binaries isn't supported by the backend
             end
 
             records.each do |record|
@@ -91,8 +111,12 @@ module Attach
           if var
             var == :nil ? nil : var
           else
-            attachment = self.attachments.where(:role => name, :parent_id => nil).first
-            instance_variable_set("@#{name}", attachment || :nil)
+            if attachment = self.attachments.where(:role => name, :parent_id => nil).first
+              instance_variable_set("@#{name}", attachment)
+            else
+              instance_variable_set("@#{name}", :nil)
+              nil
+            end
           end
         end
 
