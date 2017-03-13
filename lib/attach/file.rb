@@ -2,13 +2,13 @@ module Attach
   class File
 
     attr_accessor :data
-    attr_accessor :file_name
-    attr_accessor :file_type
+    attr_accessor :name
+    attr_accessor :type
 
-    def initialize(data, file_name = "untitled", file_type = "application/octet-stream")
+    def initialize(data, name = "untitled", type = "application/octet-stream")
       @data = data
-      @file_name = file_name
-      @file_type = file_type
+      @name = name
+      @type = type
     end
 
   end
