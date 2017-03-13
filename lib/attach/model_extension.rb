@@ -1,5 +1,6 @@
 require 'attach/attachment'
 require 'attach/processor'
+require 'attach/attachment_dsl'
 
 module Attach
   module ModelExtension
@@ -12,15 +13,7 @@ module Attach
         end
 
         if @pending_attachments
-          @pending_attachments.each do |pa|
-            attachment = self.attachments.build(:uploaded_file => pa[:file], :role => pa[:role])
-            if pa[:options]
-              pa[:options].each do |key, value|
-                attachment.send("#{key}=", value)
-              end
-            end
-            attachment.save!
-          end
+          @pending_attachments.values.each(&:save!)
           @pending_attachments = nil
         end
       end
@@ -102,8 +95,19 @@ module Attach
           has_many :attachments, :as => :owner, :dependent => :destroy, :class_name => 'Attach::Attachment'
         end
 
-        if block_given?
-          Processor.register(self, name, &block)
+        dsl = AttachmentDSL.new(&block)
+
+        if dsl.processor?
+          Processor.register(self, name, &dsl.processor)
+        end
+
+        if dsl.validator?
+          validate do
+            attachment = @pending_attachments && @pending_attachments[name] ? @pending_attachments[name] : send(name)
+            file_errors = []
+            dsl.validator.call(attachment, file_errors)
+            file_errors.each { |e| errors.add("#{name}_file", e) }
+          end
         end
 
         define_method name do
@@ -126,12 +130,24 @@ module Attach
 
         define_method "#{name}_file=" do |file|
           instance_variable_set("@#{name}_file", file)
-          if file.is_a?(ActionDispatch::Http::UploadedFile)
-            @pending_attachments ||= []
-            @pending_attachments << {:role => name, :file => file, :options => options}
+          @pending_attachments ||= {}
+          if file
+            attachment = Attachment.new({:owner => self, :role => name}.merge(options))
+            case file
+            when ActionDispatch::Http::UploadedFile
+              attachment.binary = file.tempfile.read
+              attachment.file_name = file.original_filename
+              attachment.file_type = file.content_type
+            else
+              attachment.binary = file
+              attachment.file_name = "untitled"
+              attachment.file_type = "application/octet-stream"
+            end
           else
-            nil
+            attachment = nil
           end
+          @pending_attachments ||= {}
+          @pending_attachments[name] = attachment
         end
 
         define_method "#{name}_delete" do

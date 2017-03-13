@@ -98,14 +98,30 @@ The disposition of a file served by the middleware will be `attachment` by defau
 attachment :cover_photo, :disposition => 'inline'
 ```
 
+## Validation
+
+To validate an image before persisting it to your backend you can include a validation block.
+
+```ruby
+attachment :image do
+  validator do |attachment, errors|
+    unless Lizard::Image.is_image?(attachment.binary)
+      errors << "must be an image"
+    end
+  end
+end
+```
+
 ## Processing
 
 If processing is required for an uploaded file, this can be acheived by passing a block to the `attachment` method.
 
 ```ruby
-attachment :image do |attachment|
-  # Do your additional processing on this attachment
-  # This might include making thumbnails of an image etc...
+attachment :image do
+  processor do |attachment|
+    # Do your additional processing on this attachment
+    # This might include making thumbnails of an image etc...
+  end
 end
 ```
 
@@ -139,11 +155,13 @@ Attachments can have child attachments which are associated with the first one. 
 The easiest place to create children is in the processing block for an attachment. You should call the `add_child` method with the role for the new item. This should be unique across all children in the parent image. If you upload a new child with the same name later, the original will be removed.
 
 ```ruby
-attachment :cover_photo do |attachment|
-  # Attachment is the originally uploaded file
-  attachment.add_child('thumb500') do |c|
-    c.binary = ImageMagick::Resizer.new(attachment.binary, 500, 500) #psudocode
-    c.file_name = "thumb500x500.png"
+attachment :cover_photo do
+  processor do |attachment|
+    image = Lizard::Image.new(attachment.binary)
+    attachment.add_child(:thumb500) do |c|
+      c.binary = image.resize(500, 500)
+      c.file_name = "thumb500x500.jpg"
+    end
   end
 end
 ```

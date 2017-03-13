@@ -11,7 +11,6 @@ module Attach
 
     # This will be the ActionDispatch::UploadedFile object which be diseminated
     # by the class on save.
-    attr_accessor :uploaded_file
     attr_writer :binary
 
     # Relationships
@@ -29,15 +28,8 @@ module Attach
     # All attachments should have a token assigned to this
     before_validation { self.token = SecureRandom.uuid if self.token.blank? }
 
-    # Copy values from the `uploaded_file` and set them as the appropriate
-    # fields on this model
+    # Set size and digest
     before_validation do
-      if self.uploaded_file
-        self.binary = self.uploaded_file.tempfile.read
-        self.file_name = self.uploaded_file.original_filename
-        self.file_type = self.uploaded_file.content_type
-      end
-
       self.digest = Digest::SHA1.hexdigest(self.binary)
       self.file_size = self.binary.bytesize
     end
