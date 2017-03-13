@@ -138,6 +138,10 @@ module Attach
               attachment.binary = file.tempfile.read
               attachment.file_name = file.original_filename
               attachment.file_type = file.content_type
+            when Attach::File
+              attachment.binary = file.data
+              attachment.file_name = file.file_name
+              attachment.file_type = file.file_type
             else
               attachment.binary = file
               attachment.file_name = "untitled"

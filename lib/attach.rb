@@ -1,5 +1,6 @@
 require 'records_manipulator'
 require 'attach/processor'
+require 'attach/file'
 require 'attach/railtie' if defined?(Rails)
 
 module Attach
