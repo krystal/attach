@@ -15,6 +15,14 @@ module Attach
     @backend = backend
   end
 
+  def self.asset_host
+    @asset_host
+  end
+
+  def self.asset_host=(host)
+    @asset_host = host
+  end
+
   def self.use_filesystem!(config = {})
     require 'attach/backends/file_system'
     @backend = Attach::Backends::FileSystem.new(config)

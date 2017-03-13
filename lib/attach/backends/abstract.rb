@@ -28,7 +28,7 @@ module Attach
       # Return the URL that this attachment can be accessed at
       #
       def url(attachment)
-        "/attachment/#{attachment.token}/#{attachment.file_name}"
+        "#{Attach.asset_host}/attachment/#{attachment.token}/#{attachment.file_name}"
       end
 
       #
