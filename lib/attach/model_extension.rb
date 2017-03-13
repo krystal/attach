@@ -63,16 +63,14 @@ module Attach
               root_attachments.values.each do |attachment|
                 options[attachment.role.to_sym].each do |role|
                   attachment.instance_variable_set("@cached_children", {}) if attachment.instance_variable_get("@cached_children").nil?
-                  attachment.instance_variable_get("@cached_children")[role.to_sym] = child_attachments[[attachment.id, role.to_s]]
+                  attachment.instance_variable_get("@cached_children")[role.to_sym] = child_attachments[[attachment.id, role.to_s]] || :nil
                 end
               end
             end
 
             records.each do |record|
               options.keys.each do |role|
-                if a = root_attachments[[record.id, role.to_s]]
-                  record.instance_variable_set("@#{role}", a)
-                end
+                record.instance_variable_set("@#{role}", root_attachments[[record.id, role.to_s]] || :nil)
               end
             end
           end
@@ -89,9 +87,12 @@ module Attach
         end
 
         define_method name do
-          instance_variable_get("@#{name}") || begin
+          var = instance_variable_get("@#{name}")
+          if var
+            var == :nil ? nil : var
+          else
             attachment = self.attachments.where(:role => name, :parent_id => nil).first
-            instance_variable_set("@#{name}", attachment)
+            instance_variable_set("@#{name}", attachment || :nil)
           end
         end
 

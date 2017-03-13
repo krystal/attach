@@ -92,9 +92,8 @@ module Attach
     # Return a child process
     def child(role)
       @cached_children ||= {}
-      @cached_children[role.to_sym] ||= begin
-        self.children.where(:role => role).first
-      end
+      @cached_children[role.to_sym] ||= self.children.where(:role => role).first || :nil
+      @cached_children[role.to_sym] == :nil ? nil : @cached_children[role.to_sym]
     end
 
     # Try to return a given otherwise revert to the parent
