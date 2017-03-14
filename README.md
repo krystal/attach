@@ -77,7 +77,11 @@ person.cover_photo.digest     #=> "c4de7fd75a7e2ec37bde3a5ef9fa53a1ce9228c0"
 person.cover_photo.binary     #=> <Binary data>
 ```
 
-To download the stored asset, you can use the value of the `url`. Attach has a middleware that will render these files for you automatically.
+To download the stored asset, you can use the value of the `url`. Attach has a middleware that will render these files for you automatically. By default, the middleware will serve all attachments as long as the user has the UUID of the attachment. If you wish to disable the serving of certain attachments (i.e. secure files that should be authenticated first), you should set the `serve` option to false.
+
+```ruby
+attachment :passport_scan, :serve => false
+```
 
 ### Preloading attachments
 
