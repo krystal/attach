@@ -25,7 +25,8 @@ module Attach
 
     def process
       call_processors(@attachment)
-      @attachment.update_column(:processed, true)
+      @attachment.processed = true
+      @attachment.save(:validate => false)
     end
 
     def queue_or_process
