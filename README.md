@@ -30,12 +30,35 @@ end
 
 ## Uploading attachments
 
-You can upload attachments straight from forms into your models by using the `_file` accessor which is provided for each attachment that you define.
+You'll have a reader and a writer for the attachment that you've created which allows you to set the file to be uploaded. For example:
+
+```ruby
+person = Person.new
+
+# Set the photo from some data you have
+person.cover_photo = some_binary_data
+person.cover_photo.file_name = "cover-photo.jpg"
+person.cover_photo.file_type = "image/jpg"
+
+# Or you can pass in an ActionDispatch::Http::UploadedFile
+person.cover_photo = params[:person][:cover_photo]
+
+# You can also pass a pre-constructed `Attach::File` object
+file = Attach::File.new(binary)
+file.name = "some-name.pdf"
+file.type = "application/pdf"
+person.cover_photo = file
+```
+
+It's worth noting that calling your reader will always return an `Attach::Attachment` object regardless of what you pass in. If you pass in an uploaded file it will be converted to the `Attach::Attachment` object at the point it is set.
+
+
+### Uploading from a form
 
 ```erb
 <% form_for @person, :html => {:multipart => true} do |f| %>
-  <%= f.file_field :profile_picture_file %>
-  <%= f.file_field :cover_photo_file %>
+  <%= f.file_field :profile_picture %>
+  <%= f.file_field :cover_photo %>
   <%= f.submit "Upload Attachments" %>
 <% end %>
 ```
@@ -52,14 +75,20 @@ person.cover_photo.url        #=> "/attachment/145d17ed-d5e3-4b55-8c89-ecad9521a
 person.cover_photo.file_name  #=> "snom-mm2.jpg"
 person.cover_photo.digest     #=> "c4de7fd75a7e2ec37bde3a5ef9fa53a1ce9228c0"
 person.cover_photo.binary     #=> <Binary data>
-
-
-# Pre-loading attachments will only load meta data, the actual content will
-# not be loaded.
-people = Person.includes(:profile_picture)
 ```
 
 To download the stored asset, you can use the value of the `url`. Attach has a middleware that will render these files for you automatically.
+
+### Preloading attachments
+
+If you're obtaining an array of objects and wish to have attachment information ready to go, you can include it as follows:
+
+```ruby
+# This will include the details about the attachment (not including the binary)
+people = Person.includes_attachments(:cover_photo)
+# This will include the details plus the binary
+people = Person.includes_attachments(:cover_photo, :_include_binaries => [:_self])
+```
 
 ## Deleting images
 
@@ -182,4 +211,7 @@ If you're loading multiple objects though you may wish to preload the images tha
 Post.includes_attachments(:cover_photo => [:thumb500]).each do |post|
   post.cover_photo.child(:thumb500) # => No additional database queries
 end
+
+# Include binaries for certain children (in this case thumb500)
+posts = Post.includes_attachments(:cover_photo, :_include_binaries => {:cover_photo => [:thumb500]})
 ```

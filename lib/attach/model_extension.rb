@@ -31,15 +31,28 @@ module Attach
               options = options.first
               binaries_to_include = options.delete(:_include_binaries) || {}
             else
-              options = options.each_with_object({}) do |role, hash|
-                hash[role.to_sym] = []
-              end
               binaries_to_include = {}
+              options = options.each_with_object({}) do |opt, hash|
+                if opt.is_a?(Symbol) || opt.is_a?(String)
+                  hash[opt.to_sym] = []
+                elsif opt.is_a?(Hash)
+                  opt.each do |key, value|
+                    if key == :_include_binaries
+                      binaries_to_include = value
+                    else
+                      hash[key.to_sym] = value
+                    end
+                  end
+                end
+              end
+
             end
 
             options.keys.each do |key|
               if options[key].is_a?(Symbol)
                 options[key] = [options[key]]
+              elsif options[key] == true
+                options[key] = []
               end
             end
 
@@ -126,14 +139,10 @@ module Attach
           end
         end
 
-        define_method "#{name}_file" do
-          instance_variable_get("@#{name}_file")
-        end
-
-        define_method "#{name}_file=" do |file|
-          instance_variable_set("@#{name}_file", file)
-          @pending_attachments ||= {}
-          if file
+        define_method "#{name}=" do |file|
+          if file.is_a?(Attach::Attachment)
+            attachment = file
+          elsif file
             attachment = Attachment.new({:owner => self, :role => name}.merge(options))
             case file
             when ActionDispatch::Http::UploadedFile
@@ -149,11 +158,13 @@ module Attach
               attachment.file_name = "untitled"
               attachment.file_type = "application/octet-stream"
             end
-          else
-            attachment = nil
           end
-          @pending_attachments ||= {}
-          @pending_attachments[name] = attachment
+
+          if attachment
+            @pending_attachments ||= {}
+            @pending_attachments[name] = attachment
+          end
+          instance_variable_set("@#{name}", attachment)
         end
 
         define_method "#{name}_delete" do
