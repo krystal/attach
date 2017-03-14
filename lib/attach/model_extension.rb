@@ -97,15 +97,17 @@ module Attach
 
         dsl = AttachmentDSL.new(&block)
 
-        if dsl.processor?
-          Processor.register(self, name, &dsl.processor)
+        dsl.processors.each do |processor|
+          Processor.register(self, name, &processor)
         end
 
-        if dsl.validator?
+        if dsl.validators.size > 0
           validate do
             attachment = @pending_attachments && @pending_attachments[name] ? @pending_attachments[name] : send(name)
             file_errors = []
-            dsl.validator.call(attachment, file_errors)
+            dsl.validators.each do |validator|
+              validator.call(attachment, file_errors)
+            end
             file_errors.each { |e| errors.add("#{name}_file", e) }
           end
         end

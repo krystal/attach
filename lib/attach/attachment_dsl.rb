@@ -1,26 +1,25 @@
 module Attach
   class AttachmentDSL
 
+    attr_reader :processors
+    attr_reader :validators
+
     def initialize(&block)
+      @processors = []
+      @validators = []
       if block_given?
         instance_eval(&block)
       end
     end
 
-    def processor?
-      !@processor.nil?
+    def processor(*processors, &block)
+      processors.each { |p| @processors << p }
+      @processors << block if block_given?
     end
 
-    def processor(&block)
-      block_given? ? @processor = block : @processor
-    end
-
-    def validator?
-      !@validator.nil?
-    end
-
-    def validator(&block)
-      block_given? ? @validator = block : @validator
+    def validator(*validators, &block)
+      validators.each { |v| @validators << v }
+      @validators << block if block_given?
     end
 
   end
