@@ -94,7 +94,7 @@ people = Person.includes_attachments(:cover_photo, :_include_binaries => [:_self
 
 If you wish to remove an image you can simply call `destroy`. If you want to do this from a form, you can add a checkbox with the name `{name}_delete`.
 
-## Backends
+## Backends
 
 You can choose between storing your images in your database or on the file system. The method you choose will depend on your environment and usage requirements. By default, files are stored in the database.
 
