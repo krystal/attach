@@ -28,6 +28,9 @@ module Attach
     # All attachments should have a token assigned to this
     before_validation { self.token = SecureRandom.uuid if self.token.blank? }
 
+    # Allow custom data to be stored on the attachment
+    serialize :custom, Hash
+
     # Set size and digest
     before_validation do
       self.digest = Digest::SHA1.hexdigest(self.binary)
