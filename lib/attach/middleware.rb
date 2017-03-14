@@ -9,7 +9,7 @@ module Attach
 
     def call(env)
       if env['PATH_INFO'] =~ /\A\/attachment\/([a-f0-9\-]{36})\/(.*)/
-        if attachment = Attach::Attachment.find_by_token($1)
+        if attachment = Attach::Attachment.where(:serve => true).find_by_token($1)
           [200, {
             'Content-Length' => attachment.file_size.to_s,
             'Content-Type' => attachment.file_type,
