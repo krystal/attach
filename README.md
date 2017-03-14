@@ -215,3 +215,11 @@ end
 # Include binaries for certain children (in this case thumb500)
 posts = Post.includes_attachments(:cover_photo, :_include_binaries => {:cover_photo => [:thumb500]})
 ```
+
+## CDNs
+
+If you have an origin pull CDN and would like the `url` attribute for your attachments to include the appropriate CDN host, you can set it.
+
+```ruby
+Attach.asset_host = "https://cdn.exampleapp.com"
+```
