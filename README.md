@@ -175,6 +175,40 @@ end
 
 Once you have registered a block for queueing (using `background`), all attachments for the application will be processed in the background.
 
+### Sharing Processors
+
+If you have multiple attachments that all need to use the same processor, you can share them.
+
+```ruby
+module ImageProcessing
+  # Make a proc that handles your processing
+  GetDimensions = proc do |attachment|
+    # Do your processing
+  end
+end
+
+attachment :image do
+  # Set it as the processor for each attachment
+  processor ImageProcessing::GetDimensions
+end
+```
+
+This can also be used for validators.
+
+## Custom Data
+
+Attachments have a `custom` attribute which allows you to store data with an attachment. You might use this to store the width/height of an image in a processor.
+
+```ruby
+attachment :image do
+  processor do |attachment|
+    image = Lizard::Image.new(attachment.binary)
+    attachment.custom['width'] = image.width
+    attachment.custom['height'] = image.height
+  end
+end
+```
+
 ## Children
 
 Attachments can have child attachments which are associated with the first one. This is useful if you're uploading images and wish to generate different thumbnails for it automatically. It works like this:
