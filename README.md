@@ -226,7 +226,7 @@ attachment :cover_photo do
   processor do |attachment|
     image = Lizard::Image.new(attachment.binary)
     attachment.add_child(:thumb500) do |c|
-      c.binary = image.resize(500, 500)
+      c.binary = image.resize(500, 500).data
       c.file_name = "thumb500x500.jpg"
     end
   end
