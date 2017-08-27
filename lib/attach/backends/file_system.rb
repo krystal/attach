@@ -6,20 +6,20 @@ module Attach
     class FileSystem < Abstract
 
       def read(attachment)
-        File.read(path_for_attachment(attachment))
+        ::File.read(path_for_attachment(attachment))
       end
 
       def write(attachment, data)
         path = path_for_attachment(attachment)
-        FileUtils.mkdir_p(File.dirname(path))
-        File.open(path, 'wb') do |f|
+        FileUtils.mkdir_p(::File.dirname(path))
+        ::File.open(path, 'wb') do |f|
           f.write(data)
         end
       end
 
       def delete(attachment)
         path = path_for_attachment(attachment)
-        FileUtils.rm(path) if File.file?(path)
+        FileUtils.rm(path) if ::File.file?(path)
       end
 
       private
@@ -29,7 +29,7 @@ module Attach
       end
 
       def path_for_attachment(attachment)
-        File.join(root_dir, attachment.token[0,2], attachment.token[2,2], attachment.token[4,40])
+        ::File.join(root_dir, attachment.token[0,2], attachment.token[2,2], attachment.token[4,40])
       end
 
     end
