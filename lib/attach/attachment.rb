@@ -25,21 +25,21 @@ module Attach
     validates :digest, :presence => true
     validates :token, :presence => true, :uniqueness => true
 
-    # All attachments should have a token assigned to this
-    before_validation { self.token = SecureRandom.uuid if self.token.blank? }
-
     # Allow custom data to be stored on the attachment
     serialize :custom, Hash
 
     # Set size and digest
     before_validation do
-      self.digest = Digest::SHA1.hexdigest(self.binary)
-      self.file_size = self.binary.bytesize
+      self.token      ||= SecureRandom.uuid
+      self.digest     ||= self.binary.is_a?(String) ? Digest::SHA1.hexdigest(self.binary) : Attach.backend.digest(self.binary)
+      self.file_size  ||= self.binary.is_a?(String) ? self.binary.bytesize : Attach.backend.bytesize(self.binary)
     end
 
     # Write the binary to the backend storage
     after_create do
-      Attach.backend.write(self, self.binary)
+      if self.binary
+        Attach.backend.write(self, self.binary)
+      end
     end
 
     # Remove any old images for this owner/role when this is added
