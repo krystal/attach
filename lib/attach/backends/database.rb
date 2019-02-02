@@ -12,9 +12,14 @@ module Attach
         end
       end
 
-      def write(attachment, data)
+      def write(attachment, binary)
         binary = AttachmentBinary.where(:attachment_id => attachment.id).first_or_initialize
-        binary.data = data
+        if binary.respond_to?(:path)
+          binary.rewind
+          binary.data = binary.read
+        else
+          binary.data = binary
+        end
         binary.save!
       end
 

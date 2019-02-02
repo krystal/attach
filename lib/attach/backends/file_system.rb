@@ -12,8 +12,12 @@ module Attach
       def write(attachment, data)
         path = path_for_attachment(attachment)
         FileUtils.mkdir_p(::File.dirname(path))
-        ::File.open(path, 'wb') do |f|
-          f.write(data)
+        if data.respond_to?(:path)
+          FileUtils.mv(data.path, path)
+        else
+          ::File.open(path, 'wb') do |f|
+            f.write(data)
+          end
         end
       end
 
