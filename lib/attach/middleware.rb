@@ -14,7 +14,7 @@ module Attach
             'Content-Length' => attachment.file_size.to_s,
             'Content-Type' => attachment.file_type,
             'Cache-Control' => "#{attachment.cache_type || 'private'}, immutable, max-age=#{attachment.cache_max_age || 30.days.to_i}",
-            'Content-Disposition' => "#{attachment.disposition || 'attachment'}; filename=\"#{attachment.file_name}\","
+            'Content-Disposition' => "#{attachment.disposition || 'attachment'}; filename=\"#{attachment.file_name}\""
             },
           [attachment.binary]]
         else
