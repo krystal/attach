@@ -12,6 +12,8 @@ module Attach
           self.attachments.where(:role => @pending_attachment_deletions).destroy_all
         end
 
+        @replaced_attachment&.destroy
+
         if @pending_attachments
           @pending_attachments.values.each(&:save!)
           @pending_attachments = nil
@@ -141,7 +143,7 @@ module Attach
 
         define_method "#{name}=" do |file|
           if file.is_a?(Attach::Attachment)
-            self.try(name)&.destroy
+            @replaced_attachment = self.try(name)
             attachment = file
             attachment.owner = self
             attachment.role = name
