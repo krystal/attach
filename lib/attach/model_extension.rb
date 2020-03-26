@@ -141,7 +141,11 @@ module Attach
 
         define_method "#{name}=" do |file|
           if file.is_a?(Attach::Attachment)
+            self.try(name)&.destroy
             attachment = file
+            attachment.owner = self
+            attachment.role = name
+            attachment.processed = false
           elsif file
             attachment = Attachment.new({:owner => self, :role => name}.merge(options))
             case file
