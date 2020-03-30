@@ -26,7 +26,7 @@ module Attach
       def includes_attachments(*options)
         manipulate do |records|
           if records.empty?
-            # Nothing to do
+            # Nothing to do
           else
 
             if options.first.is_a?(Hash)
@@ -152,7 +152,7 @@ module Attach
             attachment = Attachment.new({:owner => self, :role => name}.merge(options))
             case file
             when ActionDispatch::Http::UploadedFile
-              attachment.binary = file.tempfile.read
+              attachment.binary = file.tempfile
               attachment.file_name = file.original_filename
               attachment.file_type = file.content_type
             when Attach::File

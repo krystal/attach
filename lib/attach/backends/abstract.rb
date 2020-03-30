@@ -41,6 +41,34 @@ module Attach
         end
       end
 
+      #
+      # Return the SHA1 digest of a given binary
+      #
+      def digest(binary)
+        if binary.respond_to?(:path)
+          sha1 = Digest::SHA1.new
+          binary.binmode
+          binary.rewind
+          while chunk = binary.read(1024 * 1024)
+            sha1.update(chunk)
+          end
+          sha1.hexdigest
+        else
+          Digest::SHA1.hexdigest(binary)
+        end
+      end
+
+      #
+      # Return the bytesize of a given binary
+      #
+      def bytesize(binary)
+        if binary.respond_to?(:path)
+          ::File.size(binary.path)
+        else
+          binary.bytesize
+        end
+      end
+
     end
   end
 end
