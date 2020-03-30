@@ -13,14 +13,15 @@ module Attach
       end
 
       def write(attachment, binary)
-        binary = AttachmentBinary.where(:attachment_id => attachment.id).first_or_initialize
+        binary_object = AttachmentBinary.where(:attachment_id => attachment.id).first_or_initialize
         if binary.respond_to?(:path)
           binary.rewind
-          binary.data = binary.read
+          binary_object.data = binary.read
         else
-          binary.data = binary
+          binary_object.data = binary
         end
-        binary.save!
+        binary_object.save!
+        binary_object
       end
 
       def delete(attachment)
