@@ -217,7 +217,7 @@ end
 
 Attachments can have child attachments which are associated with the first one. This is useful if you're uploading images and wish to generate different thumbnails for it automatically. It works like this:
 
-### Creating children
+### Creating children
 
 The easiest place to create children is in the processing block for an attachment. You should call the `add_child` method with the role for the new item. This should be unique across all children in the parent image. If you upload a new child with the same name later, the original will be removed.
 
