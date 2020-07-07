@@ -23,7 +23,7 @@ module Attach
     validates :file_type, :presence => true
     validates :file_size, :presence => true
     validates :digest, :presence => true
-    validates :token, :presence => true, :uniqueness => true
+    validates :token, :presence => true, :uniqueness => {case_sensitive: false}
 
     # Allow custom data to be stored on the attachment
     serialize :custom, Hash
