@@ -44,12 +44,14 @@ module Attach
           user1 = UserWithPhoto.create!
           user2 = UserWithPhoto.create!
           user3 = UserWithPhoto.create!
+          user4 = UserWithPhoto.create!
           attachment1 = create(:attachment, owner: user1)
           create(:attachment, owner: user3, parent: attachment1, role: 'thumb500')
           attachment2 = create(:attachment, owner: user2)
           create(:attachment, owner: user3, parent: attachment2, role: 'thumb500')
           attachment3 = create(:attachment, owner: user3)
           create(:attachment, owner: user3, parent: attachment3, role: 'thumb500')
+          create(:attachment, owner: user4)
           users = nil
           expect { users = UserWithPhoto.includes_attachment(photo: :thumb500) }.to_not make_database_queries
           expect { users = users.to_a }.to make_database_queries(count: 3)

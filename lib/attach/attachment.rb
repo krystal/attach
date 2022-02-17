@@ -67,8 +67,11 @@ module Attach
 
     def child(role)
       @cached_children ||= {}
-      @cached_children[role.to_sym] ||= children.where(role: role).first || :nil
-      @cached_children[role.to_sym] == :nil ? nil : @cached_children[role.to_sym]
+      if @cached_children.key?(role.to_sym)
+        return @cached_children[role.to_sym]
+      end
+
+      @cached_children[role.to_sym] = children.where(role: role).first
     end
 
     def try(role)

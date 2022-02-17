@@ -80,15 +80,13 @@ module Attach
         return if attachment.nil?
 
         @fields[role.to_sym].each do |child_role|
-          child_attachment = @child_attachments[attachment.id][child_role.to_s]
+          child_attachment = @child_attachments.dig(attachment.id, child_role.to_s)
           if attachment.instance_variable_get('@cached_children').nil?
             attachment.instance_variable_set('@cached_children', {})
           end
           attachment.instance_variable_get('@cached_children')[child_role] = child_attachment
         end
       end
-
-      # sd
 
     end
   end
