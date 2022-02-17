@@ -88,6 +88,7 @@ module Attach
       attachment.disposition = disposition
       attachment.cache_type = cache_type
       attachment.cache_max_age = cache_max_age
+      attachment.serve = serve
       attachment.type = type
       block.call(attachment)
       attachment.save!
