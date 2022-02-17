@@ -70,11 +70,11 @@ You can access any of your attachments easily through the methods as shown below
 ```ruby
 # Accessing attachments
 person = Person.find(person.id)
-person.cover_photo            #=> Attach::Attachment
-person.cover_photo.url        #=> "/attachment/145d17ed-d5e3-4b55-8c89-ecad9521ad73/snom-mm2.jpg"
-person.cover_photo.file_name  #=> "snom-mm2.jpg"
-person.cover_photo.digest     #=> "c4de7fd75a7e2ec37bde3a5ef9fa53a1ce9228c0"
-person.cover_photo.binary     #=> <Binary data>
+person.cover_photo              #=> Attach::Attachment
+person.cover_photo.url          #=> "/attachment/145d17ed-d5e3-4b55-8c89-ecad9521ad73/snom-mm2.jpg"
+person.cover_photo.file_name    #=> "snom-mm2.jpg"
+person.cover_photo.digest       #=> "c4de7fd75a7e2ec37bde3a5ef9fa53a1ce9228c0"
+person.cover_photo.blob.read    #=> <Binary data>
 ```
 
 To download the stored asset, you can use the value of the `url`. Attach has a middleware that will render these files for you automatically. By default, the middleware will serve all attachments as long as the user has the UUID of the attachment. If you wish to disable the serving of certain attachments (i.e. secure files that should be authenticated first), you should set the `serve` option to false.
@@ -90,8 +90,6 @@ If you're obtaining an array of objects and wish to have attachment information 
 ```ruby
 # This will include the details about the attachment (not including the binary)
 people = Person.includes_attachments(:cover_photo)
-# This will include the details plus the binary
-people = Person.includes_attachments(:cover_photo, :_include_binaries => [:_self])
 ```
 
 ## Deleting images
@@ -138,7 +136,7 @@ To validate an image before persisting it to your backend you can include a vali
 ```ruby
 attachment :image do
   validator do |attachment, errors|
-    unless Lizard::Image.is_image?(attachment.binary)
+    unless Lizard::Image.is_image?(attachment.blob.read)
       errors << "must be an image"
     end
   end
@@ -152,7 +150,7 @@ Attachments have a `custom` attribute which allows you to store data with an att
 ```ruby
 attachment :image do
   processor do |attachment|
-    image = Lizard::Image.new(attachment.binary)
+    image = Lizard::Image.new(attachment.blob.read)
     attachment.custom['width'] = image.width
     attachment.custom['height'] = image.height
   end
@@ -170,10 +168,9 @@ The easiest place to create children is in the processing block for an attachmen
 ```ruby
 attachment :cover_photo do
   processor do |attachment|
-  at
-    image = Lizard::Image.new(attachment.binary)
+    image = Lizard::Image.new(attachment.blob.read)
     attachment.add_child(:thumb500) do |c|
-      c.binary = image.resize(500, 500).data
+      c.blob = Attach::BlobTypes::Raw.new(image.resize(500, 500).data)
       c.file_name = "thumb500x500.jpg"
     end
   end
