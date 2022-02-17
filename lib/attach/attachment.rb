@@ -75,13 +75,21 @@ module Attach
       child(role) || self
     end
 
+    # rubocop:disable Metrics/AbcSize
     def add_child(role, &block)
-      attachment = children.build(attributes.slice(:owner, :file_name, :file_type, :disposition, :cache_type,
-                                                   :cache_max_age, :type))
+      attachment = children.build
       attachment.role = role
+      attachment.owner = owner
+      attachment.file_name = file_name
+      attachment.file_type = file_type
+      attachment.disposition = disposition
+      attachment.cache_type = cache_type
+      attachment.cache_max_age = cache_max_age
+      attachment.type = type
       block.call(attachment)
       attachment.save!
     end
+    # rubocop:enable Metrics/AbcSize
 
     # rubocop:disable Metrics/AbcSize
     def copy_attributes_from_file(file)
