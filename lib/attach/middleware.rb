@@ -19,7 +19,7 @@ module Attach
         return [404, {}, ['Attachment not found']]
       end
 
-      [200, headers_for_attachment(attachment), [attachment.binary]]
+      [200, headers_for_attachment(attachment), [attachment.blob.read]]
     end
 
     private
