@@ -6,7 +6,6 @@ gemspec
 
 group :development do
   gem 'rubocop'
-  gem 'shoulda-matchers'
   gem 'solargraph'
 end
 
@@ -15,5 +14,6 @@ group :test do
   gem 'db-query-matchers'
   gem 'factory_bot'
   gem 'rspec'
+  gem 'shoulda-matchers'
   gem 'sqlite3'
 end
