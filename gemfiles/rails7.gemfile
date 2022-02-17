@@ -1,0 +1,15 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+gemspec
+
+gem 'activerecord', '>= 7.0', '< 8'
+
+group :test do
+  gem 'database_cleaner-active_record'
+  gem 'db-query-matchers'
+  gem 'factory_bot'
+  gem 'rspec'
+  gem 'sqlite3'
+end
