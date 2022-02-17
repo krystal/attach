@@ -1,11 +1,11 @@
-require 'securerandom'
-require 'digest/sha1'
+# frozen_string_literal: true
 
 module Attach
   class AttachmentBinary < ActiveRecord::Base
 
-    # Set the table name
     self.table_name = 'attachment_binaries'
+
+    belongs_to :attachment
 
   end
 end

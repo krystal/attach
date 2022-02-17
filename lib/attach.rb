@@ -1,32 +1,26 @@
-require 'records_manipulator'
-require 'attach/processor'
-require 'attach/file'
+# frozen_string_literal: true
+
 require 'attach/railtie' if defined?(Rails)
 
 module Attach
 
-  def self.backend
-    @backend ||= begin
-      require 'attach/backends/database'
-      Attach::Backends::Database.new
+  class << self
+
+    attr_writer :backend
+    attr_accessor :asset_host
+
+    def backend
+      @backend ||= begin
+        require 'attach/backends/database'
+        Attach::Backends::Database.new
+      end
     end
-  end
 
-  def self.backend=(backend)
-    @backend = backend
-  end
+    def use_filesystem!(config = {})
+      require 'attach/backends/file_system'
+      @backend = Attach::Backends::FileSystem.new(config)
+    end
 
-  def self.asset_host
-    @asset_host
-  end
-
-  def self.asset_host=(host)
-    @asset_host = host
-  end
-
-  def self.use_filesystem!(config = {})
-    require 'attach/backends/file_system'
-    @backend = Attach::Backends::FileSystem.new(config)
   end
 
 end

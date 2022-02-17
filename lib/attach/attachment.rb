@@ -1,115 +1,160 @@
+# frozen_string_literal: true
+
 require 'securerandom'
 require 'digest/sha1'
 require 'attach/attachment_binary'
+require 'attach/processor'
+require 'attach/blob_types/raw'
+require 'attach/blob_types/file'
 
 module Attach
   class Attachment < ActiveRecord::Base
 
-    # Set the table name
     self.table_name = 'attachments'
     self.inheritance_column = 'sti_type'
 
-    # This will be the ActionDispatch::UploadedFile object which be diseminated
-    # by the class on save.
-    attr_writer :binary
+    attr_writer :backend
 
-    # Relationships
-    belongs_to :owner, :polymorphic => true
-    belongs_to :parent, :class_name => 'Attach::Attachment', :optional => true
-    has_many :children, :class_name => 'Attach::Attachment', :dependent => :destroy, :foreign_key => :parent_id
+    belongs_to :owner, polymorphic: true
+    belongs_to :parent, class_name: 'Attach::Attachment', optional: true
+    has_many :children, class_name: 'Attach::Attachment', dependent: :destroy, foreign_key: :parent_id
 
-    # Validations
-    validates :file_name, :presence => true
-    validates :file_type, :presence => true
-    validates :file_size, :presence => true
-    validates :digest, :presence => true
-    validates :token, :presence => true, :uniqueness => {case_sensitive: false}
+    validates :file_name, presence: true
+    validates :file_type, presence: true
+    validates :file_size, presence: true
+    validates :digest, presence: true
+    validates :token, presence: true, uniqueness: { case_sensitive: false }
 
-    # Allow custom data to be stored on the attachment
     serialize :custom, Hash
 
-    # Set size and digest
-    before_validation do
-      self.token      ||= SecureRandom.uuid
-      self.digest     ||= self.binary.is_a?(String) ? Digest::SHA1.hexdigest(self.binary) : Attach.backend.digest(self.binary)
-      self.file_size  ||= self.binary.is_a?(String) ? self.binary.bytesize : Attach.backend.bytesize(self.binary)
+    before_validation :set_token
+    before_validation :set_digest
+    before_validation :set_file_size
+
+    after_create :write_blob_to_backend
+    after_create :destroy_other_attachments_for_same_parent
+
+    after_commit :queue_or_process_with_processor
+
+    after_destroy :remove_from_backend
+
+    def blob
+      return @blob if instance_variable_defined?('@blob')
+      return nil unless persisted?
+
+      @blob = backend.read(self)
     end
 
-    # Write the binary to the backend storage
-    after_create do
-      if self.binary
-        Attach.backend.write(self, self.binary)
+    def blob=(blob)
+      unless blob.nil? || blob.is_a?(BlobTypes::File) || blob.is_a?(BlobTypes::Raw)
+        raise ArgumentError, 'Only nil or a File/Raw blob type can be set as a blob for an attachment'
       end
+
+      @blob = blob
     end
 
-    # Remove any old images for this owner/role when this is added
-    after_create do
-      self.owner.attachments.where.not(:id => self).where(:parent_id => self.parent_id, :role => self.role).destroy_all
-    end
-
-    # Run any post-upload processing after the record has been committed
-    after_commit do
-      unless self.processed? || self.parent_id
-        self.processor.queue_or_process
-      end
-    end
-
-    # Remove the file from the backends
-    after_destroy do
-      Attach.backend.delete(self)
-    end
-
-    # Return the attachment for a given role
-    def self.for(role)
-      self.where(:role => role).first
-    end
-
-    # Return the binary data for this attachment
-    def binary
-      @binary ||= persisted? ? Attach.backend.read(self) : nil
-      @binary == :nil ? nil : @binary
-    end
-
-    # Return the path to the attachment
     def url
-      Attach.backend.url(self)
+      backend.url(self)
     end
 
-    # Is the attachment an image?
     def image?
       file_type =~ /\Aimage\//
     end
 
-    # Return a processor for this attachment
     def processor
       @processor ||= Processor.new(self)
     end
 
-    # Return a child process
     def child(role)
       @cached_children ||= {}
-      @cached_children[role.to_sym] ||= self.children.where(:role => role).first || :nil
+      @cached_children[role.to_sym] ||= children.where(role: role).first || :nil
       @cached_children[role.to_sym] == :nil ? nil : @cached_children[role.to_sym]
     end
 
-    # Try to return a given otherwise revert to the parent
     def try(role)
       child(role) || self
     end
 
-    # Add a child attachment
     def add_child(role, &block)
-      attachment = self.children.build
+      attachment = children.build(attributes.slice(:owner, :file_name, :file_type, :disposition, :cache_type,
+                                                   :cache_max_age, :type))
       attachment.role = role
-      attachment.owner = self.owner
-      attachment.file_name = self.file_name
-      attachment.file_type = self.file_type
-      attachment.disposition = self.disposition
-      attachment.cache_type = self.cache_type
-      attachment.cache_max_age = self.cache_max_age
-      attachment.type = self.type
       block.call(attachment)
       attachment.save!
+    end
+
+    # rubocop:disable Metrics/AbcSize
+    def copy_attributes_from_file(file)
+      case file.class.name
+      when 'ActionDispatch::Http::UploadedFile'
+        self.blob = BlobTypes::File.new(file.tempfile)
+        self.file_name = file.original_filename
+        self.file_type = file.content_type
+      when 'Attach::File'
+        self.binary = BlobTypes::Raw.new(file.data)
+        self.file_name = file.name
+        self.file_type = file.type
+      else
+        self.blob = BlobTypes::Raw.new(file)
+        self.file_name = 'untitled'
+        self.file_type = 'application/octet-stream'
+      end
+    end
+    # rubocop:enable Metrics/AbcSize
+
+    private
+
+    def backend
+      @backend || Attach.backend
+    end
+
+    def write_blob_to_backend
+      return if blob.blank?
+
+      backend.write(self, blob)
+    end
+
+    def destroy_other_attachments_for_same_parent
+      owner.attachments.where.not(id: self).where(parent_id: parent_id, role: role).destroy_all
+    end
+
+    def set_token
+      return if token.present?
+
+      self.token = SecureRandom.uuid
+    end
+
+    def set_digest
+      return if digest.present?
+      return if blob.blank?
+
+      self.digest = blob.digest
+    end
+
+    def set_file_size
+      return if file_size.present?
+      return if blob.blank?
+
+      self.file_size = blob.size
+    end
+
+    def remove_from_backend
+      backend.delete(self)
+    end
+
+    def queue_or_process_with_processor
+      return if processed?
+      return if parent_id
+
+      processor.queue_or_process
+    end
+
+    class << self
+
+      def for(role)
+        where(role: role).first
+      end
+
     end
 
   end

@@ -1,15 +1,14 @@
+# frozen_string_literal: true
+
 module Attach
   class AttachmentDSL
 
-    attr_reader :processors
-    attr_reader :validators
+    attr_reader :processors, :validators
 
     def initialize(&block)
       @processors = []
       @validators = []
-      if block_given?
-        instance_eval(&block)
-      end
+      instance_eval(&block) if block_given?
     end
 
     def processor(*processors, &block)

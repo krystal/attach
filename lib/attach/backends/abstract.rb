@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Attach
   module Backends
     class Abstract
@@ -7,19 +9,19 @@ module Attach
       end
 
       #
-      # Return the data for the given attachment
+      #  Return the data for the given attachment
       #
       def read(attachment)
       end
 
       #
-      # Write data for the given attachment
+      #  Write data for the given attachment
       #
       def write(attachment, data)
       end
 
       #
-      # Delete the data for the given attachment
+      #  Delete the data for the given attachment
       #
       def delete(attachment)
       end
@@ -32,7 +34,7 @@ module Attach
       end
 
       #
-      # Return binaries for a set of files. They should be returned as a hash consisting
+      #  Return binaries for a set of files. They should be returned as a hash consisting
       # of the attachment ID followed by the data
       #
       def read_multi(attachments)

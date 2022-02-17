@@ -7,7 +7,7 @@ Attach allow you to attach files/images/documents to Active Record models with e
 In order to get started, add the gem to your Gemfile:
 
 ```ruby
-gem 'attach'
+gem 'attach', '~> 2.0'
 ```
 
 Once included, add the database table which will store your attachments.
@@ -145,60 +145,6 @@ attachment :image do
 end
 ```
 
-## Processing
-
-If processing is required for an uploaded file, this can be acheived by passing a block to the `attachment` method.
-
-```ruby
-attachment :image do
-  processor do |attachment|
-    # Do your additional processing on this attachment
-    # This might include making thumbnails of an image etc...
-  end
-end
-```
-
-By default, all processing will happen syncronously which may not be desirable if the processing will take time. To background the processing automatically, you can request the assistance of a worker. You need to use your own worker system to do this, an example is provided below.
-
-```ruby
-# Configure how jobs should be queued
-Attach::Processor.background do |attachment|
-  ProcessAttachmentJob.queue(:attachment_id => attachment.id)
-end
-
-# Define a job (if you don't preload your app, be sure to get the parent initialized before trying to run any processing
-# otherwise the processors won't have registered),
-class ProcessAttachmentJob < Jobster::Job
-  def perform
-    if attachment = Attach::Attachment.includes(:parent).find(params['attachment_id'])
-      attachment.processor.process
-    end
-  end
-end
-```
-
-Once you have registered a block for queueing (using `background`), all attachments for the application will be processed in the background.
-
-### Sharing Processors
-
-If you have multiple attachments that all need to use the same processor, you can share them.
-
-```ruby
-module ImageProcessing
-  # Make a proc that handles your processing
-  GetDimensions = proc do |attachment|
-    # Do your processing
-  end
-end
-
-attachment :image do
-  # Set it as the processor for each attachment
-  processor ImageProcessing::GetDimensions
-end
-```
-
-This can also be used for validators.
-
 ## Custom Data
 
 Attachments have a `custom` attribute which allows you to store data with an attachment. You might use this to store the width/height of an image in a processor.
@@ -224,6 +170,7 @@ The easiest place to create children is in the processing block for an attachmen
 ```ruby
 attachment :cover_photo do
   processor do |attachment|
+  at
     image = Lizard::Image.new(attachment.binary)
     attachment.add_child(:thumb500) do |c|
       c.binary = image.resize(500, 500).data
@@ -249,9 +196,6 @@ If you're loading multiple objects though you may wish to preload the images tha
 Post.includes_attachments(:cover_photo => [:thumb500]).each do |post|
   post.cover_photo.child(:thumb500) # => No additional database queries
 end
-
-# Include binaries for certain children (in this case thumb500)
-posts = Post.includes_attachments(:cover_photo, :_include_binaries => {:cover_photo => [:thumb500]})
 ```
 
 ## CDNs
