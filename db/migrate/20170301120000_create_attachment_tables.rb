@@ -17,7 +17,7 @@ class CreateAttachmentTables < ActiveRecord::Migration[6.0]
 
     create_table :attachment_binaries do |t|
       t.belongs_to :attachment
-      t.binary :data, limit: 10.megabytes
+      t.binary :data, limit: 10_485_760
       t.timestamps
     end
   end
