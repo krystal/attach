@@ -103,7 +103,7 @@ module Attach
         self.file_name = file.original_filename
         self.file_type = file.content_type
       when 'Attach::File'
-        self.binary = BlobTypes::Raw.new(file.data)
+        self.blob = BlobTypes::Raw.new(file.data)
         self.file_name = file.name
         self.file_type = file.type
       else
