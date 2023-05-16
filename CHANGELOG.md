@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/krystal/attach/compare/v2.0.0...v2.0.1) (2023-05-16)
+
+
+### Bug Fixes
+
+* use correct ruby version for releasing ([45615b4](https://github.com/krystal/attach/commit/45615b4b76d8d2466164507e0b2373e3b929d739))
+
 ## [2.0.0](https://github.com/krystal/attach/compare/v1.1.2...v2.0.0) (2023-05-16)
 
 
