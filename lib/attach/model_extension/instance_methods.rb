@@ -11,7 +11,7 @@ module Attach
 
         return if @pending_attachments.nil? || @pending_attachments.empty?
 
-        @pending_attachments.values.each(&:save!)
+        @pending_attachments.each_value(&:save!)
         @pending_attachments = nil
       end
 

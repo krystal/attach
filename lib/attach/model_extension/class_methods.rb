@@ -5,10 +5,10 @@ require 'attach/attachment'
 require 'attach/model_extension/inclusion'
 
 require 'records_manipulator/relation_extension'
-::ActiveRecord::Relation.include RecordsManipulator::RelationExtension
+ActiveRecord::Relation.include RecordsManipulator::RelationExtension
 
 require 'records_manipulator/base_extension'
-::ActiveRecord::Base.include RecordsManipulator::BaseExtension
+ActiveRecord::Base.include RecordsManipulator::BaseExtension
 
 module Attach
   module ModelExtension

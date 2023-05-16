@@ -10,7 +10,7 @@ module Attach
     end
 
     def call(env)
-      unless env['PATH_INFO'] =~ /\A\/attachment\/([a-f0-9\-]{36})\/(.*)/
+      unless env['PATH_INFO'] =~ /\A\/attachment\/([a-f0-9-]{36})\/(.*)/
         return @app.call(env)
       end
 
