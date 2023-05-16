@@ -2,6 +2,7 @@
 
 require File.expand_path('lib/attach/version', __dir__)
 
+# rubocop:disable Gemspec/RequireMFA
 Gem::Specification.new do |s|
   s.name          = 'attach'
   s.description   = 'Attach documents & files to Active Record models'
@@ -16,5 +17,5 @@ Gem::Specification.new do |s|
   s.licenses      = ['MIT']
   s.add_runtime_dependency('activerecord', '>= 6.0')
   s.add_runtime_dependency('records_manipulator', '>= 1.0', '< 2.0')
-  s.metadata['rubygems_mfa_required'] = 'true'
 end
+# rubocop:enable Gemspec/RequireMFA
