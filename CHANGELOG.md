@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/krystal/attach/compare/v2.0.1...v2.0.2) (2023-05-16)
+
+
+### Bug Fixes
+
+* don't require mfa for gems ([95352be](https://github.com/krystal/attach/commit/95352be0a55e786c26740a902905e30b78f2e785))
+
 ## [2.0.1](https://github.com/krystal/attach/compare/v2.0.0...v2.0.1) (2023-05-16)
 
 
