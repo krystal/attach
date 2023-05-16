@@ -3,7 +3,6 @@
   "packages": {
     ".": {
       "release-type": "ruby",
-      "release-as": "2.0.0",
       "version-file": "lib/attach/version.rb",
       "changelog-path": "CHANGELOG.md",
       "bump-minor-pre-major": true,
