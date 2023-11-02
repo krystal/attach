@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.3](https://github.com/krystal/attach/compare/v2.0.2...v2.0.3) (2023-11-02)
+
+
+### Bug Fixes
+
+* provide type & default options for serialize ([864e544](https://github.com/krystal/attach/commit/864e544cf2a1d755fef719a79505ad88d65d3ffe))
+
 ## [2.0.2](https://github.com/krystal/attach/compare/v2.0.1...v2.0.2) (2023-05-16)
 
 
