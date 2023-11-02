@@ -25,7 +25,7 @@ module Attach
     validates :digest, presence: true
     validates :token, presence: true, uniqueness: { case_sensitive: false }
 
-    serialize :custom, Hash
+    serialize :custom, type: Hash, default: {}
 
     before_validation :set_token
     before_validation :set_digest
