@@ -26,7 +26,7 @@ module Attach
     validates :token, :presence => true, :uniqueness => true
 
     # Allow custom data to be stored on the attachment
-    serialize :custom, Hash
+    serialize :custom, type: Hash, default: {}
 
     # Set size and digest
     before_validation do
