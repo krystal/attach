@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.4](https://github.com/krystal/attach/compare/v2.0.3...v2.0.4) (2026-08-30)
+
+
+### Bug Fixes
+
+* declare the coder for the custom column ([80d31b3](https://github.com/krystal/attach/commit/80d31b31fc4d622679a18b1e06b5e28ad40adbd0))
+
 ## [2.0.3](https://github.com/krystal/attach/compare/v2.0.2...v2.0.3) (2023-11-02)
 
 
