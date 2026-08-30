@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'logger'
 require 'active_record'
 require 'shoulda-matchers'
 require 'factory_bot'
@@ -10,8 +11,10 @@ require 'attach/model_extension'
 ActiveRecord::Base.include Attach::ModelExtension
 
 ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: ':memory:'
-ActiveRecord::MigrationContext.new(File.expand_path('../db/migrate', __dir__),
-                                   ActiveRecord::SchemaMigration).migrate(nil)
+migration_context_args = [File.expand_path('../db/migrate', __dir__)]
+# Active Record < 7.1 needs the schema migration class; 7.1+ takes it from the connection
+migration_context_args << ActiveRecord::SchemaMigration if ActiveRecord.version < Gem::Version.new('7.1')
+ActiveRecord::MigrationContext.new(*migration_context_args).migrate(nil)
 ActiveRecord::Migration.create_table :users do |t|
   t.string :name
   t.datetime :suspended_at
